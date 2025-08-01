@@ -71,7 +71,45 @@ def add_recipe():
     }
     return jsonify({'message': 'Recipe added successfully', 'recipe': new_recipe_data})
 
+@app.route('/api/recipes<int:recipe_id>', methods=['PUT'])
+def update_recipe(recipe_id):
+     if not recipe:
+         return jsonify({'error': 'Recipe not found'}), 404
+     recipe=Recipe.query.get(recipe_id)
+     data = request.get_json()
+     new_recipe = Recipe (
+        title=data['title'],
+        ingredients=data['ingredients'],
+        instructions=data['instructions'],
+        servings=data['servings'],
+        description=data['description'],
+        image_url=data['image_url']
+    )
+     required_fields = ['title', 'ingredients', 'instructions', 'servings', 'description', 'image_url']
+     for field in required_fields:
+        if field not in data or data[field] == "":
+            return jsonify({'error': f"Missing required field: '{field}'"}), 400
 
+     db.session.commit()
 
-if __name__ == '__main__':
-    app.run(debug=True)
+ 
+     updated_recipe = {
+        'id': recipe.id,
+        'title':recipe.title,
+        'ingredients': recipe.ingredients,
+        'instructions': recipe.instructions,
+        'servings': recipe.servings,
+        'description': recipe.description,
+        'image_url': recipe.image_url
+    }
+     return jsonify({'message': 'Recipe updated successfully', 'recipe': updated_recipe})
+@app.route('/api/recipes<int:recipe_id>', methods=['DELETE'])
+def delete_recipe(recipe_id):
+    recipe = Recipe.query.get(recipe_id)
+    if not recipe:
+        return jsonify({'error': 'Recipe not found'}),404
+    db.session.delete(recipe)
+    db.session.commit()
+    return({'message': 'Recipe deleted successfully'})
+    
+    
